@@ -4,6 +4,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.user import User
 from app.schemas.user import SendOtpRequest, VerifyOtpRequest, TokenResponse
+from app.config import settings
 from app.utils.sms import generate_otp, send_sms, verify_otp
 from app.utils.auth import create_access_token
 
@@ -16,7 +17,7 @@ async def send_otp(req: SendOtpRequest):
     ok = await send_sms(req.phone, code)
     if not ok:
         raise HTTPException(status_code=500, detail="Failed to send SMS")
-    return {"message": "OTP sent", "code": code if not ok else None}
+    return {"message": "OTP sent", "code": code if not settings.SMS_API_KEY else None}
 
 
 @router.post("/verify-otp", response_model=TokenResponse)
