@@ -2,7 +2,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 from app.database import init_db
-from app.api import auth, attendance, shift, report, work_site
+from app.api import auth, attendance, shift, report, work_site, admin
 
 
 @asynccontextmanager
@@ -26,6 +26,7 @@ app.include_router(attendance.router, prefix="/api/attendance", tags=["Attendanc
 app.include_router(shift.router, prefix="/api/shift", tags=["Shift"])
 app.include_router(report.router, prefix="/api/report", tags=["Report"])
 app.include_router(work_site.router, prefix="/api/work-sites", tags=["Work Sites"])
+app.include_router(admin.router, prefix="/api/admin", tags=["Admin"])
 
 
 @app.get("/api/health")
