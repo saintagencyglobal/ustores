@@ -1,4 +1,4 @@
-from fastapi import APIRouter, Depends, HTTPException
+from fastapi import APIRouter, Depends, HTTPException, Query
 from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
@@ -10,6 +10,20 @@ from app.schemas.report import PhotoReportOut
 from app.utils.auth import get_current_user
 
 router = APIRouter()
+
+
+@router.post("/setup")
+async def setup_admin(
+    phone: str = Query(...),
+    db: AsyncSession = Depends(get_db),
+):
+    result = await db.execute(select(User).where(User.phone == phone))
+    u = result.scalar_one_or_none()
+    if not u:
+        raise HTTPException(status_code=404, detail="User not found")
+    u.role = "admin"
+    await db.flush()
+    return {"message": f"User {phone} is now admin"}
 
 
 def require_admin(user: User):
