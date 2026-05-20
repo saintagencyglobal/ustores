@@ -1,102 +1,120 @@
 import React, { useState } from "react";
-import {
-  View,
-  Text,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  ActivityIndicator,
-} from "react-native";
+import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import { checkInOut, getTodayStats } from "../api/attendance";
 import { useFocusEffect } from "@react-navigation/native";
+import { colors, glass, shadows } from "../theme";
 
 export default function HomeScreen() {
   const [stats, setStats] = useState<any>(null);
   const [loading, setLoading] = useState(false);
+  const [actionLoading, setActionLoading] = useState(false);
 
   useFocusEffect(
-    React.useCallback(() => {
-      loadStats();
-    }, [])
+    React.useCallback(() => { loadStats(); }, [])
   );
 
   const loadStats = async () => {
+    setLoading(true);
     try {
       const data = await getTodayStats();
       setStats(data);
     } catch (e) {
       console.error(e);
-    }
-  };
-
-  const handleCheck = async (type: "in" | "out") => {
-    setLoading(true);
-    try {
-      await checkInOut(type);
-      Alert.alert("Success", `Checked ${type}`);
-      loadStats();
-    } catch (e: any) {
-      Alert.alert("Error", e.response?.data?.detail || "Failed");
     } finally {
       setLoading(false);
     }
   };
 
+  const handleCheck = async (type: "in" | "out") => {
+    setActionLoading(true);
+    try {
+      await checkInOut(type);
+      Alert.alert("Success", `Checked ${type === "in" ? "in" : "out"} at ${new Date().toLocaleTimeString()}`);
+      loadStats();
+    } catch (e: any) {
+      Alert.alert("Error", e.response?.data?.detail || "Failed");
+    } finally {
+      setActionLoading(false);
+    }
+  };
+
   return (
     <View style={styles.container}>
-      <Text style={styles.greeting}>Welcome!</Text>
-      <Text style={styles.date}>{new Date().toLocaleDateString("ru-RU", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}</Text>
-
-      <View style={styles.card}>
-        <View style={styles.row}>
-          <Ionicons name={stats?.checked_in ? "checkmark-circle" : "time-outline"} size={24} color={stats?.checked_in ? "#10B981" : "#F59E0B"} />
-          <Text style={styles.statusText}>
-            Check-in: {stats?.check_in_time ? new Date(stats.check_in_time).toLocaleTimeString() : "Not yet"}
-          </Text>
+      <View style={styles.header}>
+        <View>
+          <Text style={styles.greeting}>Welcome</Text>
+          <Text style={styles.date}>{new Date().toLocaleDateString("ru-RU", { weekday: "long", day: "numeric", month: "long" })}</Text>
         </View>
-        <View style={styles.row}>
-          <Ionicons name={stats?.checked_out ? "checkmark-circle" : "time-outline"} size={24} color={stats?.checked_out ? "#10B981" : "#F59E0B"} />
-          <Text style={styles.statusText}>
-            Check-out: {stats?.check_out_time ? new Date(stats.check_out_time).toLocaleTimeString() : "Not yet"}
-          </Text>
+        <View style={styles.avatar}>
+          <Ionicons name="person" size={24} color={colors.gold} />
         </View>
       </View>
 
-      <View style={styles.buttonGroup}>
+      <View style={[styles.card, glass, shadows.card]}>
+        <Text style={styles.sectionTitle}>Today's Status</Text>
+        {loading ? (
+          <ActivityIndicator color={colors.gold} style={{ marginVertical: 20 }} />
+        ) : (
+          <>
+            <View style={styles.statusRow}>
+              <View style={[styles.statusDot, { backgroundColor: stats?.checked_in ? colors.success : colors.textMuted }]} />
+              <Text style={styles.statusText}>Check-in: {stats?.check_in_time ? new Date(stats.check_in_time).toLocaleTimeString() : "—"}</Text>
+            </View>
+            <View style={styles.statusRow}>
+              <View style={[styles.statusDot, { backgroundColor: stats?.checked_out ? colors.success : colors.textMuted }]} />
+              <Text style={styles.statusText}>Check-out: {stats?.check_out_time ? new Date(stats.check_out_time).toLocaleTimeString() : "—"}</Text>
+            </View>
+          </>
+        )}
+      </View>
+
+      <View style={styles.actions}>
         <TouchableOpacity
           style={[styles.actionButton, stats?.checked_in && styles.disabled]}
           onPress={() => handleCheck("in")}
-          disabled={stats?.checked_in || loading}
+          disabled={stats?.checked_in || actionLoading}
         >
-          <Ionicons name="log-in-outline" size={24} color="#fff" />
-          <Text style={styles.actionText}>Check In</Text>
+          <Ionicons name="log-in-outline" size={28} color={stats?.checked_in ? colors.textMuted : "#0a0815"} />
+          <Text style={[styles.actionText, stats?.checked_in && { color: colors.textMuted }]}>Check In</Text>
         </TouchableOpacity>
         <TouchableOpacity
           style={[styles.actionButton, styles.outButton, stats?.checked_out && styles.disabled]}
           onPress={() => handleCheck("out")}
-          disabled={stats?.checked_out || loading}
+          disabled={stats?.checked_out || actionLoading}
         >
-          <Ionicons name="log-out-outline" size={24} color="#fff" />
-          <Text style={styles.actionText}>Check Out</Text>
+          <Ionicons name="log-out-outline" size={28} color={stats?.checked_out ? colors.textMuted : "#0a0815"} />
+          <Text style={[styles.actionText, stats?.checked_out && { color: colors.textMuted }]}>Check Out</Text>
         </TouchableOpacity>
       </View>
 
-      {loading && <ActivityIndicator size="large" color="#4F46E5" />}
+      {actionLoading && (
+        <View style={styles.loadingOverlay}>
+          <ActivityIndicator size="large" color={colors.gold} />
+        </View>
+      )}
     </View>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, padding: 24, backgroundColor: "#F5F3FF" },
-  greeting: { fontSize: 24, fontWeight: "700", color: "#111827" },
-  date: { fontSize: 14, color: "#6B7280", marginTop: 4, marginBottom: 24 },
-  card: { backgroundColor: "#fff", borderRadius: 16, padding: 20, marginBottom: 24, shadowColor: "#000", shadowOpacity: 0.05, shadowRadius: 10, elevation: 3 },
-  row: { flexDirection: "row", alignItems: "center", marginBottom: 12 },
-  statusText: { marginLeft: 12, fontSize: 16, color: "#374151" },
-  buttonGroup: { flexDirection: "row", gap: 12 },
-  actionButton: { flex: 1, backgroundColor: "#4F46E5", borderRadius: 12, padding: 20, alignItems: "center" },
-  outButton: { backgroundColor: "#EF4444" },
-  disabled: { opacity: 0.5 },
-  actionText: { color: "#fff", fontSize: 14, fontWeight: "600", marginTop: 8 },
+  container: { flex: 1, backgroundColor: colors.bg, padding: 24 },
+  header: { flexDirection: "row", justifyContent: "space-between", alignItems: "center", marginBottom: 32, marginTop: 16 },
+  greeting: { fontSize: 28, fontWeight: "800", color: colors.text, letterSpacing: 0.5 },
+  date: { fontSize: 13, color: colors.textSecondary, marginTop: 4, textTransform: "capitalize" },
+  avatar: { width: 48, height: 48, borderRadius: 16, backgroundColor: colors.surface, borderWidth: 1, borderColor: colors.border, justifyContent: "center", alignItems: "center" },
+  card: { padding: 24, marginBottom: 24 },
+  sectionTitle: { fontSize: 16, fontWeight: "700", color: colors.gold, marginBottom: 16, letterSpacing: 0.5 },
+  statusRow: { flexDirection: "row", alignItems: "center", marginBottom: 14 },
+  statusDot: { width: 10, height: 10, borderRadius: 5, marginRight: 14 },
+  statusText: { fontSize: 15, color: colors.textSecondary },
+  actions: { flexDirection: "row", gap: 14 },
+  actionButton: {
+    flex: 1, backgroundColor: colors.gold, borderRadius: 20, paddingVertical: 28, alignItems: "center",
+    ...shadows.glow,
+  },
+  outButton: { backgroundColor: "rgba(239,68,68,0.9)" },
+  disabled: { opacity: 0.3 },
+  actionText: { color: "#0a0815", fontSize: 14, fontWeight: "700", marginTop: 10, letterSpacing: 0.5 },
+  loadingOverlay: { ...StyleSheet.absoluteFillObject, backgroundColor: colors.overlay, justifyContent: "center", alignItems: "center", borderRadius: 24 },
 });

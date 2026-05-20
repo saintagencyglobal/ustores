@@ -5,6 +5,7 @@ import HomeScreen from "../screens/HomeScreen";
 import HistoryScreen from "../screens/HistoryScreen";
 import ShiftScreen from "../screens/ShiftScreen";
 import ReportScreen from "../screens/ReportScreen";
+import { colors } from "../theme";
 
 const Tab = createBottomTabNavigator();
 
@@ -12,25 +13,40 @@ export default function AppNavigator() {
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
-        tabBarIcon: ({ color, size }) => {
+        tabBarIcon: ({ focused }) => {
           const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
-            Home: "home-outline",
-            History: "calendar-outline",
-            Shift: "briefcase-outline",
-            Report: "camera-outline",
+            Home: "home", History: "calendar", Shift: "briefcase", Report: "camera",
           };
-          return <Ionicons name={icons[route.name]} size={size} color={color} />;
+          return (
+            <Ionicons
+              name={focused ? icons[route.name] : (`${icons[route.name]}-outline` as any)}
+              size={22}
+              color={focused ? colors.gold : colors.textMuted}
+            />
+          );
         },
-        tabBarActiveTintColor: "#4F46E5",
-        tabBarInactiveTintColor: "#9CA3AF",
+        tabBarActiveTintColor: colors.gold,
+        tabBarInactiveTintColor: colors.textMuted,
         headerShown: false,
-        tabBarStyle: { backgroundColor: "#fff", borderTopColor: "#F3F4F6" },
+        tabBarStyle: {
+          backgroundColor: "#0f0d1e",
+          borderTopWidth: 1,
+          borderTopColor: colors.border,
+          paddingTop: 6,
+          paddingBottom: 10,
+          height: 65,
+        },
+        tabBarLabelStyle: {
+          fontSize: 10,
+          fontWeight: "600",
+          letterSpacing: 0.5,
+        },
       })}
     >
-      <Tab.Screen name="Home" component={HomeScreen} options={{ tabBarLabel: "Home" }} />
-      <Tab.Screen name="History" component={HistoryScreen} options={{ tabBarLabel: "History" }} />
-      <Tab.Screen name="Shift" component={ShiftScreen} options={{ tabBarLabel: "Shift" }} />
-      <Tab.Screen name="Report" component={ReportScreen} options={{ tabBarLabel: "Report" }} />
+      <Tab.Screen name="Home" component={HomeScreen} />
+      <Tab.Screen name="History" component={HistoryScreen} />
+      <Tab.Screen name="Shift" component={ShiftScreen} />
+      <Tab.Screen name="Report" component={ReportScreen} />
     </Tab.Navigator>
   );
 }

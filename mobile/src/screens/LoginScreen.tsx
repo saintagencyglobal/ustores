@@ -1,17 +1,12 @@
 import React, { useState } from "react";
 import {
-  View,
-  Text,
-  TextInput,
-  TouchableOpacity,
-  StyleSheet,
-  Alert,
-  KeyboardAvoidingView,
-  Platform,
-  ActivityIndicator,
+  View, Text, TextInput, TouchableOpacity, StyleSheet,
+  Alert, KeyboardAvoidingView, Platform, ActivityIndicator,
 } from "react-native";
+import { Ionicons } from "@expo/vector-icons";
 import { sendOtp, verifyOtp } from "../api/auth";
 import { saveToken, saveUser } from "../store/auth";
+import { colors, shadows } from "../theme";
 
 export default function LoginScreen({ onLogin }: { onLogin: () => void }) {
   const [phone, setPhone] = useState("");
@@ -50,76 +45,124 @@ export default function LoginScreen({ onLogin }: { onLogin: () => void }) {
 
   return (
     <KeyboardAvoidingView style={styles.container} behavior={Platform.OS === "ios" ? "padding" : undefined}>
-      <Text style={styles.title}>Attendance App</Text>
+      <View style={styles.logoWrap}>
+        <Ionicons name="shield-checkmark" size={48} color={colors.gold} />
+      </View>
+      <Text style={styles.title}>Ustores</Text>
       <Text style={styles.subtitle}>
-        {step === "phone" ? "Enter your phone number" : "Enter verification code"}
+        {step === "phone" ? "Enter your phone to get started" : "Enter verification code"}
       </Text>
 
       {step === "phone" ? (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="Phone number"
-            placeholderTextColor="#999"
-            keyboardType="phone-pad"
-            value={phone}
-            onChangeText={setPhone}
-          />
-          <TextInput
-            style={styles.input}
-            placeholder="Your name (optional for new users)"
-            placeholderTextColor="#999"
-            value={name}
-            onChangeText={setName}
-          />
+        <View style={styles.form}>
+          <View style={styles.inputWrap}>
+            <Ionicons name="phone-portrait-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Phone number"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="phone-pad"
+              value={phone}
+              onChangeText={setPhone}
+            />
+          </View>
+          <View style={styles.inputWrap}>
+            <Ionicons name="person-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="Your name (new users)"
+              placeholderTextColor={colors.textMuted}
+              value={name}
+              onChangeText={setName}
+            />
+          </View>
           <TouchableOpacity style={styles.button} onPress={handleSendOtp} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Send Code</Text>}
+            {loading ? <ActivityIndicator color="#0a0815" /> : <Text style={styles.buttonText}>Send Code</Text>}
           </TouchableOpacity>
-        </>
+        </View>
       ) : (
-        <>
-          <TextInput
-            style={styles.input}
-            placeholder="000000"
-            placeholderTextColor="#999"
-            keyboardType="number-pad"
-            maxLength={6}
-            value={code}
-            onChangeText={setCode}
-          />
+        <View style={styles.form}>
+          <View style={styles.inputWrap}>
+            <Ionicons name="key-outline" size={20} color={colors.textMuted} style={styles.inputIcon} />
+            <TextInput
+              style={styles.input}
+              placeholder="000000"
+              placeholderTextColor={colors.textMuted}
+              keyboardType="number-pad"
+              maxLength={6}
+              value={code}
+              onChangeText={setCode}
+            />
+          </View>
           <TouchableOpacity style={styles.button} onPress={handleVerifyOtp} disabled={loading}>
-            {loading ? <ActivityIndicator color="#fff" /> : <Text style={styles.buttonText}>Verify</Text>}
+            {loading ? <ActivityIndicator color="#0a0815" /> : <Text style={styles.buttonText}>Verify</Text>}
           </TouchableOpacity>
           <TouchableOpacity onPress={() => setStep("phone")}>
             <Text style={styles.link}>Change phone number</Text>
           </TouchableOpacity>
-        </>
+        </View>
       )}
     </KeyboardAvoidingView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: { flex: 1, justifyContent: "center", padding: 24, backgroundColor: "#F5F3FF" },
-  title: { fontSize: 28, fontWeight: "700", color: "#4F46E5", textAlign: "center", marginBottom: 8 },
-  subtitle: { fontSize: 16, color: "#6B7280", textAlign: "center", marginBottom: 32 },
-  input: {
-    backgroundColor: "#fff",
-    borderRadius: 12,
-    padding: 16,
-    fontSize: 16,
-    marginBottom: 12,
+  container: {
+    flex: 1,
+    backgroundColor: colors.bg,
+    justifyContent: "center",
+    padding: 32,
+  },
+  logoWrap: {
+    width: 80,
+    height: 80,
+    borderRadius: 24,
+    backgroundColor: colors.surface,
     borderWidth: 1,
-    borderColor: "#E5E7EB",
-    color: "#111827",
+    borderColor: colors.border,
+    justifyContent: "center",
+    alignItems: "center",
+    alignSelf: "center",
+    marginBottom: 20,
+  },
+  title: {
+    fontSize: 36,
+    fontWeight: "800",
+    color: colors.gold,
+    textAlign: "center",
+    letterSpacing: 2,
+    marginBottom: 8,
+  },
+  subtitle: {
+    fontSize: 15,
+    color: colors.textSecondary,
+    textAlign: "center",
+    marginBottom: 40,
+  },
+  form: { gap: 16 },
+  inputWrap: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.surface,
+    borderRadius: 16,
+    borderWidth: 1,
+    borderColor: colors.border,
+    paddingHorizontal: 16,
+  },
+  inputIcon: { marginRight: 12 },
+  input: {
+    flex: 1,
+    paddingVertical: 18,
+    fontSize: 16,
+    color: colors.text,
   },
   button: {
-    backgroundColor: "#4F46E5",
-    borderRadius: 12,
-    padding: 16,
+    backgroundColor: colors.gold,
+    borderRadius: 16,
+    paddingVertical: 18,
     alignItems: "center",
     marginTop: 8,
   },
-  buttonText: { color: "#fff", fontSize: 16, fontWeight: "600" },
-  link: { color: "#4F46E5", textAlign: "center", marginTop: 16, fontSize: 14 },
+  buttonText: { color: colors.bg, fontSize: 16, fontWeight: "700" },
+  link: { color: colors.gold, textAlign: "center", marginTop: 16, fontSize: 14, opacity: 0.7 },
 });
