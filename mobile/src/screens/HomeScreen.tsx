@@ -41,7 +41,7 @@ export default function HomeScreen() {
       return;
     }
     try {
-      const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.8, exif: true });
+      const result = await ImagePicker.launchImageLibraryAsync({ exif: true });
       if (!result.canceled && result.assets[0]) {
         const cachedir = FileSystem.cacheDirectory;
         if (!cachedir) throw new Error("No cache directory available");
