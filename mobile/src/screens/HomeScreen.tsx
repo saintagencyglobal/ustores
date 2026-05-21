@@ -40,11 +40,18 @@ export default function HomeScreen() {
       Alert.alert("Permission needed", "Gallery access is required to select Timestamp Camera photos");
       return;
     }
-    const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.8, exif: true });
-    if (!result.canceled && result.assets[0]) {
-      const tmp = `${FileSystem.cacheDirectory}upload_${Date.now()}.jpg`;
-      await FileSystem.copyAsync({ from: result.assets[0].uri, to: tmp });
-      setPhoto(tmp);
+    try {
+      const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.8, exif: true });
+      if (!result.canceled && result.assets[0]) {
+        const cachedir = FileSystem.cacheDirectory;
+        if (!cachedir) throw new Error("No cache directory available");
+        const tmp = `${cachedir}upload_${Date.now()}.jpg`;
+        await FileSystem.copyAsync({ from: result.assets[0].uri, to: tmp });
+        setPhoto(tmp);
+      }
+    } catch (e: any) {
+      Alert.alert("Error copying photo", e.message || "Failed to prepare photo");
+      cancelAction();
     }
   };
 
