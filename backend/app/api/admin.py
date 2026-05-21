@@ -1,8 +1,9 @@
 from fastapi import APIRouter, Depends, HTTPException, Query
-from sqlalchemy import select
+from sqlalchemy import select, delete, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from app.database import get_db
 from app.models.user import User
+from app.models.attendance import Attendance
 from app.models.report import PhotoReport
 from app.models.work_site import WorkSite
 from app.schemas.user import UserOut
@@ -88,3 +89,21 @@ async def today_stats(
     sites = result.scalar()
 
     return {"workers": workers, "sites": sites, "reports": 0}
+
+
+@router.post("/reset-today")
+async def reset_today(
+    user_id: str = Query(...),
+    admin: User = Depends(get_current_user),
+    db: AsyncSession = Depends(get_db),
+):
+    require_admin(admin)
+    from datetime import date
+    today = date.today()
+    await db.execute(
+        delete(Attendance).where(
+            Attendance.user_id == user_id,
+            func.date(Attendance.time) == today,
+        )
+    )
+    return {"message": "Today's attendance reset for user"}
