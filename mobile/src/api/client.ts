@@ -6,7 +6,6 @@ const API_BASE = "https://ustores-production.up.railway.app/api";
 const client = axios.create({
   baseURL: API_BASE,
   timeout: 15000,
-  headers: { "Content-Type": "application/json" },
 });
 
 client.interceptors.request.use(async (config) => {

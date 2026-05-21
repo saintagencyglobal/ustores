@@ -66,9 +66,14 @@ export default function HomeScreen() {
       setActiveStep(null);
       loadStats();
     } catch (e: any) {
-      const detail = e.response?.data?.detail || e.response?.data?.message || JSON.stringify(e.response?.data);
-      const status = e.response?.status ? `(HTTP ${e.response.status})` : "";
-      Alert.alert("Error", [detail, status].filter(Boolean).join(" ") || e.message || "Action failed");
+      const data = e.response?.data;
+      let detail = "Action failed";
+      if (data) {
+        if (typeof data === "string") detail = data;
+        else if (data.detail) detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail, null, 2);
+        else detail = JSON.stringify(data, null, 2);
+      }
+      Alert.alert("Error", `${detail}\n(HTTP ${e.response?.status || "?"})`);
     } finally {
       setActionLoading(false);
     }
