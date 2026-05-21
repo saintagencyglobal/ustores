@@ -42,12 +42,12 @@ def extract_exif(image_bytes: bytes) -> dict:
     if exif_data:
         for tag_id, value in exif_data.items():
             tag_name = ExifTags.TAGS.get(tag_id, tag_id)
-            if tag_name == "DateTimeOriginal":
+            if tag_name == "DateTimeOriginal" and isinstance(value, str):
                 try:
-                    result["datetime"] = datetime.strptime(str(value), "%Y:%m:%d %H:%M:%S")
+                    result["datetime"] = datetime.strptime(value, "%Y:%m:%d %H:%M:%S")
                 except ValueError:
                     pass
-            elif tag_name == "GPSInfo":
+            elif tag_name == "GPSInfo" and isinstance(value, dict):
                 gps = {}
                 for gps_tag_id, gps_value in value.items():
                     gps_tag = ExifTags.GPSTAGS.get(gps_tag_id, gps_tag_id)
