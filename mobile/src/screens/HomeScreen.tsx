@@ -33,13 +33,13 @@ export default function HomeScreen() {
     }
   };
 
-  const takePhoto = async () => {
-    const { status } = await ImagePicker.requestCameraPermissionsAsync();
+  const pickPhoto = async () => {
+    const { status } = await ImagePicker.requestMediaLibraryPermissionsAsync();
     if (status !== "granted") {
-      Alert.alert("Permission needed", "Camera permission is required");
+      Alert.alert("Permission needed", "Gallery access is required to select Timestamp Camera photos");
       return;
     }
-    const result = await ImagePicker.launchCameraAsync({ quality: 0.8, exif: true });
+    const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.8, exif: true });
     if (!result.canceled && result.assets[0]) {
       setPhoto(result.assets[0].uri);
     }
@@ -48,7 +48,7 @@ export default function HomeScreen() {
   const handleAction = async (step: FlowStep) => {
     setActiveStep(step);
     setVerificationResult(null);
-    await takePhoto();
+    await pickPhoto();
   };
 
   const submitPhoto = async () => {
@@ -120,8 +120,8 @@ export default function HomeScreen() {
             <TouchableOpacity style={styles.cancelBtn} onPress={cancelAction}>
               <Text style={styles.cancelText}>Cancel</Text>
             </TouchableOpacity>
-            <TouchableOpacity style={styles.retakeBtn} onPress={takePhoto}>
-              <Text style={styles.retakeText}>Retake</Text>
+            <TouchableOpacity style={styles.retakeBtn} onPress={pickPhoto}>
+              <Text style={styles.retakeText}>Change photo</Text>
             </TouchableOpacity>
           </View>
         </View>
