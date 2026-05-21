@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import { checkInOut, getTodayStats } from "../api/attendance";
 import { createPhotoReport } from "../api/report";
 import { useFocusEffect } from "@react-navigation/native";
@@ -41,7 +42,10 @@ export default function HomeScreen() {
     }
     const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.8, exif: true });
     if (!result.canceled && result.assets[0]) {
-      setPhoto(result.assets[0].uri);
+      const asset = result.assets[0];
+      const dest = `${FileSystem.cacheDirectory}timestamp_${Date.now()}.jpg`;
+      await FileSystem.copyAsync({ from: asset.uri, to: dest });
+      setPhoto(dest);
     }
   };
 
