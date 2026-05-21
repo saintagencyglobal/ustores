@@ -8,9 +8,7 @@ export async function checkInOut(type: "in" | "out", photoUri: string) {
     type: "image/jpeg",
     name: "photo.jpg",
   } as any);
-  const res = await client.post("/attendance/check", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const res = await client.post("/attendance/check", formData);
   return res.data;
 }
 

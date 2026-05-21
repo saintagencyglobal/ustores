@@ -66,8 +66,9 @@ export default function HomeScreen() {
       setActiveStep(null);
       loadStats();
     } catch (e: any) {
-      const msg = e.response?.data?.detail || "Action failed";
-      Alert.alert("Error", typeof msg === "string" ? msg : JSON.stringify(msg));
+      const detail = e.response?.data?.detail || e.response?.data?.message || JSON.stringify(e.response?.data);
+      const status = e.response?.status ? `(HTTP ${e.response.status})` : "";
+      Alert.alert("Error", [detail, status].filter(Boolean).join(" ") || e.message || "Action failed");
     } finally {
       setActionLoading(false);
     }

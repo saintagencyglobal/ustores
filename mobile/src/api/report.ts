@@ -15,9 +15,7 @@ export async function createPhotoReport(
   if (comment) {
     formData.append("comment", comment);
   }
-  const res = await client.post("/report/photo", formData, {
-    headers: { "Content-Type": "multipart/form-data" },
-  });
+  const res = await client.post("/report/photo", formData);
   return res.data;
 }
 
