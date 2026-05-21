@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { View, Text, ActivityIndicator } from "react-native";
+import { SafeAreaProvider } from "react-native-safe-area-context";
 import { NavigationContainer } from "@react-navigation/native";
 import { StatusBar } from "expo-status-bar";
 import { getToken } from "./src/store/auth";
@@ -30,9 +31,11 @@ export default function App() {
   }
 
   return (
-    <NavigationContainer>
-      <StatusBar style="light" />
-      {isLoggedIn ? <AppNavigator /> : <LoginScreen onLogin={() => setIsLoggedIn(true)} />}
-    </NavigationContainer>
+    <SafeAreaProvider>
+      <NavigationContainer>
+        <StatusBar style="light" />
+        {isLoggedIn ? <AppNavigator /> : <LoginScreen onLogin={() => setIsLoggedIn(true)} />}
+      </NavigationContainer>
+    </SafeAreaProvider>
   );
 }

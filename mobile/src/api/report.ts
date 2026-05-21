@@ -1,3 +1,4 @@
+import { getToken } from "../store/auth";
 import client from "./client";
 
 export async function createPhotoReport(
@@ -5,6 +6,7 @@ export async function createPhotoReport(
   photoUri: string,
   comment?: string
 ) {
+  const token = await getToken();
   const formData = new FormData();
   formData.append("report_type", reportType);
   formData.append("photo", {
@@ -15,8 +17,16 @@ export async function createPhotoReport(
   if (comment) {
     formData.append("comment", comment);
   }
-  const res = await client.post("/report/photo", formData);
-  return res.data;
+  const res = await fetch(`${client.defaults.baseURL}/report/photo`, {
+    method: "POST",
+    headers: { Authorization: `Bearer ${token}` },
+    body: formData,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw { response: { data: err, status: res.status }, message: res.statusText };
+  }
+  return res.json();
 }
 
 export async function getMyReports(reportType?: string) {

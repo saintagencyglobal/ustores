@@ -2,6 +2,7 @@ import React, { useState } from "react";
 import { View, Text, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, Image } from "react-native";
 import { Ionicons } from "@expo/vector-icons";
 import * as ImagePicker from "expo-image-picker";
+import * as FileSystem from "expo-file-system";
 import { checkInOut, getTodayStats } from "../api/attendance";
 import { createPhotoReport } from "../api/report";
 import { useFocusEffect } from "@react-navigation/native";
@@ -41,7 +42,9 @@ export default function HomeScreen() {
     }
     const result = await ImagePicker.launchImageLibraryAsync({ quality: 0.8, exif: true });
     if (!result.canceled && result.assets[0]) {
-      setPhoto(result.assets[0].uri);
+      const tmp = `${FileSystem.cacheDirectory}upload_${Date.now()}.jpg`;
+      await FileSystem.copyAsync({ from: result.assets[0].uri, to: tmp });
+      setPhoto(tmp);
     }
   };
 
@@ -66,16 +69,15 @@ export default function HomeScreen() {
       setActiveStep(null);
       loadStats();
     } catch (e: any) {
-      const data = e.response?.data;
-      let detail = "Action failed";
-      if (e.code === "ECONNABORTED") detail = "Request timed out. Try a smaller photo.";
-      else if (e.message) detail = e.message;
-      if (data) {
-        if (typeof data === "string") detail = data;
-        else if (data.detail) detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail, null, 2);
-        else detail = JSON.stringify(data, null, 2);
+      let msg = `Error: ${e.message || "Unknown"}`;
+      if (e.code) msg += `\nCode: ${e.code}`;
+      if (e.response) {
+        const data = e.response.data;
+        const detail = data?.detail || JSON.stringify(data);
+        msg = typeof detail === "string" ? detail : JSON.stringify(detail, null, 2);
+        msg += `\n(HTTP ${e.response.status})`;
       }
-      Alert.alert("Error", `${detail}\n(HTTP ${e.response?.status || "?"})`);
+      Alert.alert("Error", msg);
     } finally {
       setActionLoading(false);
     }
