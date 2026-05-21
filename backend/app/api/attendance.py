@@ -21,65 +21,72 @@ async def check_in_out(
     user: User = Depends(get_current_user),
     db: AsyncSession = Depends(get_db),
 ):
-    if type not in ("in", "out"):
-        raise HTTPException(status_code=400, detail="Type must be 'in' or 'out'")
+    try:
+        if type not in ("in", "out"):
+            raise HTTPException(status_code=400, detail="Type must be 'in' or 'out'")
 
-    today = date.today()
-    result = await db.execute(
-        select(Attendance).where(
-            and_(
-                Attendance.user_id == user.id,
-                func.date(Attendance.time) == today,
-                Attendance.type == type,
+        today = date.today()
+        result = await db.execute(
+            select(Attendance).where(
+                and_(
+                    Attendance.user_id == user.id,
+                    func.date(Attendance.time) == today,
+                    Attendance.type == type,
+                )
             )
         )
-    )
-    existing = result.scalar_one_or_none()
-    if existing:
-        raise HTTPException(status_code=400, detail=f"Already checked {type} today")
+        existing = result.scalar_one_or_none()
+        if existing:
+            raise HTTPException(status_code=400, detail=f"Already checked {type} today")
 
-    content = await photo.read()
-    exif = extract_exif(content)
-    time_check = verify_photo_time(exif["datetime"])
+        content = await photo.read()
+        exif = extract_exif(content)
+        time_check = verify_photo_time(exif["datetime"])
 
-    location_check = {"valid": False, "error": "No work site assigned"}
-    if user.work_site_id:
-        site_result = await db.execute(select(WorkSite).where(WorkSite.id == user.work_site_id))
-        site = site_result.scalar_one_or_none()
-        if site:
-            location_check = verify_photo_location(
-                exif["gps_lat"], exif["gps_lng"],
-                site.latitude, site.longitude, site.radius_meters,
-            )
+        location_check = {"valid": False, "error": "No work site assigned"}
+        if user.work_site_id:
+            site_result = await db.execute(select(WorkSite).where(WorkSite.id == user.work_site_id))
+            site = site_result.scalar_one_or_none()
+            if site:
+                location_check = verify_photo_location(
+                    exif["gps_lat"], exif["gps_lng"],
+                    site.latitude, site.longitude, site.radius_meters,
+                )
 
-    photo_url = await save_upload(photo, content)
+        photo_url = await save_upload(photo, content)
 
-    verification_errors = []
-    if not time_check["valid"]:
-        verification_errors.append(time_check["error"])
-    if not location_check["valid"]:
-        verification_errors.append(location_check["error"])
+        verification_errors = []
+        if not time_check["valid"]:
+            verification_errors.append(time_check["error"])
+        if not location_check["valid"]:
+            verification_errors.append(location_check["error"])
 
-    attendance = Attendance(
-        user_id=user.id,
-        type=type,
-        photo_url=photo_url,
-        verified_time=time_check["valid"],
-        verified_location=location_check["valid"],
-        verification_error="; ".join(verification_errors) if verification_errors else None,
-    )
-    db.add(attendance)
-    await db.flush()
-    return AttendanceOut(
-        id=str(attendance.id),
-        user_id=str(attendance.user_id),
-        type=attendance.type,
-        time=attendance.time,
-        photo_url=attendance.photo_url,
-        verified_time=attendance.verified_time,
-        verified_location=attendance.verified_location,
-        verification_error=attendance.verification_error,
-    )
+        attendance = Attendance(
+            user_id=user.id,
+            type=type,
+            photo_url=photo_url,
+            verified_time=time_check["valid"],
+            verified_location=location_check["valid"],
+            verification_error="; ".join(verification_errors) if verification_errors else None,
+        )
+        db.add(attendance)
+        await db.flush()
+        return AttendanceOut(
+            id=str(attendance.id),
+            user_id=str(attendance.user_id),
+            type=attendance.type,
+            time=attendance.time,
+            photo_url=attendance.photo_url,
+            verified_time=attendance.verified_time,
+            verified_location=attendance.verified_location,
+            verification_error=attendance.verification_error,
+        )
+    except HTTPException:
+        raise
+    except Exception as e:
+        import traceback
+        traceback.print_exc()
+        raise HTTPException(status_code=500, detail=str(e))
 
 
 @router.get("/today", response_model=TodayStats)
