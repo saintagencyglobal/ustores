@@ -1,21 +1,22 @@
 import React from "react";
 import { createBottomTabNavigator } from "@react-navigation/bottom-tabs";
+import { useSafeAreaInsets } from "react-native-safe-area-context";
 import { Ionicons } from "@expo/vector-icons";
 import HomeScreen from "../screens/HomeScreen";
 import HistoryScreen from "../screens/HistoryScreen";
-import ShiftScreen from "../screens/ShiftScreen";
-import ReportScreen from "../screens/ReportScreen";
 import { colors } from "../theme";
 
 const Tab = createBottomTabNavigator();
 
 export default function AppNavigator() {
+  const insets = useSafeAreaInsets();
+
   return (
     <Tab.Navigator
       screenOptions={({ route }) => ({
         tabBarIcon: ({ focused }) => {
           const icons: Record<string, keyof typeof Ionicons.glyphMap> = {
-            Home: "home", History: "calendar", Shift: "briefcase", Report: "camera",
+            Home: "home", History: "calendar",
           };
           return (
             <Ionicons
@@ -33,20 +34,19 @@ export default function AppNavigator() {
           borderTopWidth: 1,
           borderTopColor: colors.border,
           paddingTop: 6,
-          paddingBottom: 10,
-          height: 65,
+          paddingBottom: insets.bottom + 10,
+          height: 65 + insets.bottom,
         },
         tabBarLabelStyle: {
           fontSize: 10,
           fontWeight: "600",
           letterSpacing: 0.5,
         },
+        tabBarHideOnKeyboard: true,
       })}
     >
       <Tab.Screen name="Home" component={HomeScreen} />
       <Tab.Screen name="History" component={HistoryScreen} />
-      <Tab.Screen name="Shift" component={ShiftScreen} />
-      <Tab.Screen name="Report" component={ReportScreen} />
     </Tab.Navigator>
   );
 }

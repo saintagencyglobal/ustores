@@ -2,25 +2,27 @@ from datetime import datetime
 from pydantic import BaseModel
 
 
-class AttendanceIn(BaseModel):
-    type: str  # "in" or "out"
-
-
 class AttendanceOut(BaseModel):
     id: str
     user_id: str
     type: str
     time: datetime
+    photo_url: str | None = None
+    verified_time: bool = False
+    verified_location: bool = False
+    verification_error: str | None = None
 
     class Config:
         from_attributes = True
 
 
 class TodayStats(BaseModel):
-    checked_in: bool
-    checked_out: bool
-    check_in_time: datetime | None = None
-    check_out_time: datetime | None = None
+    check_in: datetime | None = None
+    check_out: datetime | None = None
+    cleaning: datetime | None = None
+    collection: datetime | None = None
+    checked_in: bool = False
+    checked_out: bool = False
 
 
 class DailySummary(BaseModel):

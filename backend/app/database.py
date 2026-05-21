@@ -1,5 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession, create_async_engine, async_sessionmaker
 from sqlalchemy.orm import DeclarativeBase
+from sqlalchemy import text
 
 from app.config import settings
 
@@ -26,3 +27,16 @@ async def get_db():
 async def init_db():
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.create_all)
+
+        from sqlalchemy import text
+        migration_sql = [
+            "ALTER TABLE attendances ADD COLUMN IF NOT EXISTS photo_url VARCHAR(500)",
+            "ALTER TABLE attendances ADD COLUMN IF NOT EXISTS verified_time BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE attendances ADD COLUMN IF NOT EXISTS verified_location BOOLEAN DEFAULT FALSE",
+            "ALTER TABLE attendances ADD COLUMN IF NOT EXISTS verification_error TEXT",
+        ]
+        for sql in migration_sql:
+            try:
+                await conn.execute(text(sql))
+            except Exception:
+                pass

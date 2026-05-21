@@ -1,7 +1,16 @@
 import client from "./client";
 
-export async function checkInOut(type: "in" | "out") {
-  const res = await client.post("/attendance/check", { type });
+export async function checkInOut(type: "in" | "out", photoUri: string) {
+  const formData = new FormData();
+  formData.append("type", type);
+  formData.append("photo", {
+    uri: photoUri,
+    type: "image/jpeg",
+    name: "photo.jpg",
+  } as any);
+  const res = await client.post("/attendance/check", formData, {
+    headers: { "Content-Type": "multipart/form-data" },
+  });
   return res.data;
 }
 
