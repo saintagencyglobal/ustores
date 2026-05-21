@@ -68,6 +68,8 @@ export default function HomeScreen() {
     } catch (e: any) {
       const data = e.response?.data;
       let detail = "Action failed";
+      if (e.code === "ECONNABORTED") detail = "Request timed out. Try a smaller photo.";
+      else if (e.message) detail = e.message;
       if (data) {
         if (typeof data === "string") detail = data;
         else if (data.detail) detail = typeof data.detail === "string" ? data.detail : JSON.stringify(data.detail, null, 2);
