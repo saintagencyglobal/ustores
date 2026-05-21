@@ -25,7 +25,7 @@ export default function ReportsPage() {
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
         {reports.map((r: any) => (
           <div key={r.id} className="bg-white rounded-xl shadow overflow-hidden">
-            <img src={`https://ustores-backend.onrender.com${r.photo_url}`} alt="" className="w-full h-48 object-cover" />
+            <img src={`https://ustores-production.up.railway.app${r.photo_url}`} alt="" className="w-full h-48 object-cover" />
             <div className="p-4">
               <div className="flex items-center gap-2 mb-2">
                 <span className={`px-2 py-1 rounded text-xs ${r.report_type === 'cleaning' ? 'bg-blue-100 text-blue-700' : 'bg-orange-100 text-orange-700'}`}>

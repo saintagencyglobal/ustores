@@ -1,7 +1,7 @@
 import axios from "axios";
 import { getToken, removeToken } from "../store/auth";
 
-const API_BASE = "https://ustores-backend.onrender.com/api";
+const API_BASE = "https://ustores-production.up.railway.app/api";
 
 const client = axios.create({
   baseURL: API_BASE,

@@ -1,6 +1,6 @@
 import axios from 'axios'
 
-const API = import.meta.env.VITE_API_URL || 'https://ustores-backend.onrender.com/api'
+const API = import.meta.env.VITE_API_URL || 'https://ustores-production.up.railway.app/api'
 
 const client = axios.create({ baseURL: API })
 
